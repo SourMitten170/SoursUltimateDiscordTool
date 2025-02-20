@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import logging
 from utils.role_check import has_required_role
+from typing import Optional
 
 logger = logging.getLogger('discord_bot')
 
@@ -68,7 +69,7 @@ class Moderation(commands.Cog):
     @commands.command()
     @has_required_role()
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member, *, reason: str = None):
+    async def kick(self, ctx, member: discord.Member, *, reason: Optional[str] = None):
         """Kicks a member from the server. Reason is required."""
         try:
             if not reason:
@@ -101,7 +102,7 @@ class Moderation(commands.Cog):
     @commands.command()
     @has_required_role()
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, member: discord.Member, *, reason: str = None):
+    async def ban(self, ctx, member: discord.Member, *, reason: Optional[str] = None):
         """Bans a member from the server. Reason is required."""
         try:
             if not reason:
@@ -130,6 +131,73 @@ class Moderation(commands.Cog):
         except Exception as e:
             logger.error(f"Error in ban command: {str(e)}")
             await ctx.send("An error occurred while trying to ban the member.")
+
+    @commands.command()
+    async def thank(self, ctx, member: discord.Member):
+        """Gives the Guinea Pig role to a specified member as a thank you."""
+        try:
+            guinea_pig_role = discord.utils.get(ctx.guild.roles, name="Guinea Pig")
+
+            if not guinea_pig_role:
+                await ctx.send("The 'Guinea Pig' role doesn't exist. Please create it first.")
+                return
+
+            if guinea_pig_role in member.roles:
+                await ctx.send(f"{member.mention} already has the Guinea Pig role!")
+                return
+
+            await member.add_roles(guinea_pig_role)
+            embed = discord.Embed(
+                title="Thank You!",
+                description=f"{member.mention} has been given the Guinea Pig role as a thank you!",
+                color=discord.Color.green()
+            )
+            embed.set_footer(text=f"Given by {ctx.author.name}")
+
+            await ctx.send(embed=embed)
+            logger.info(f"Guinea Pig role given to user {member.id} by {ctx.author.id}")
+
+        except discord.Forbidden:
+            await ctx.send("I don't have permission to manage roles!")
+            logger.error("Bot lacks permission to manage roles")
+        except Exception as e:
+            logger.error(f"Error in thank command: {str(e)}")
+            await ctx.send("An error occurred while giving the Guinea Pig role.")
+
+    @commands.command(name="commands")
+    async def list_commands(self, ctx):
+        """Lists all available commands, their descriptions, and usage format."""
+        try:
+            embed = discord.Embed(
+                title="Available Commands",
+                description="Here are all the available commands and their usage:",
+                color=discord.Color.blue()
+            )
+
+            # List of tuples containing (command_name, description, usage)
+            commands_info = [
+                ("restrictmod", "Removes Mod-esque role and adds Restricted-Mod role", "!restrictmod @user"),
+                ("unrestrictmod", "Removes Restricted-Mod role and adds back Mod-esque role", "!unrestrictmod @user"),
+                ("kick", "Kicks a member from the server (requires reason)", "!kick @user <reason>"),
+                ("ban", "Bans a member from the server (requires reason)", "!ban @user <reason>"),
+                ("thank", "Gives the Guinea Pig role to a specified member", "!thank @user"),
+                ("commands", "Lists all available commands and their usage", "!commands")
+            ]
+
+            for cmd_name, desc, usage in commands_info:
+                embed.add_field(
+                    name=f"**{cmd_name}**",
+                    value=f"Description: {desc}\nUsage: `{usage}`",
+                    inline=False
+                )
+
+            embed.set_footer(text="Note: Some commands require specific permissions or roles to use.")
+            await ctx.send(embed=embed)
+            logger.info(f"Command list displayed for user {ctx.author.id}")
+
+        except Exception as e:
+            logger.error(f"Error in list_commands command: {str(e)}")
+            await ctx.send("An error occurred while displaying the commands list.")
 
 async def setup(bot):
     await bot.add_cog(Moderation(bot))
