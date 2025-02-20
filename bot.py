@@ -1,9 +1,11 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import logging
 import datetime
 from utils.logger import setup_logger
 import os
+from keep_alive import keep_alive
+import subprocess
 
 # Set up logging
 logger = setup_logger()
@@ -17,6 +19,29 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 bot.start_time = datetime.datetime.utcnow()
 
 TARGET_GUILD_ID = 1335980477466546250
+
+@tasks.loop(hours=6)
+async def update_repository():
+    """Updates the GitHub repository every 6 hours"""
+    try:
+        # Check if git is configured
+        try:
+            email = subprocess.check_output(['git', 'config', '--get', 'user.email']).decode().strip()
+            name = subprocess.check_output(['git', 'config', '--get', 'user.name']).decode().strip()
+        except subprocess.CalledProcessError:
+            logger.error("Git user not configured. Auto-update disabled.")
+            return
+
+        # Perform the update
+        subprocess.run(['git', 'add', '.'], check=True)
+        commit_message = f'Auto-update: {datetime.datetime.now()}'
+        subprocess.run(['git', 'commit', '-m', commit_message], check=True)
+        subprocess.run(['git', 'push'], check=True)
+        logger.info(f"Successfully updated GitHub repository with message: {commit_message}")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Git command failed: {str(e)}")
+    except Exception as e:
+        logger.error(f"Failed to update repository: {str(e)}")
 
 @bot.event
 async def on_ready():
@@ -51,6 +76,9 @@ async def on_ready():
     await bot.load_extension('cogs.timing')
     await bot.load_extension('cogs.moderation')
 
+    # Start repository update task
+    update_repository.start()
+
     logger.info("All cogs loaded successfully")
 
 @bot.event
@@ -76,4 +104,8 @@ if not token:
     logger.error("No Discord bot token found in environment variables!")
     raise ValueError("Discord bot token not found")
 
+# Start the keep-alive server
+keep_alive()
+
+# Run the bot
 bot.run(token)

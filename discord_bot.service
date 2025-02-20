@@ -1,0 +1,15 @@
+[Unit]
+Description=Discord Bot Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/SoursUltimateDiscordTool
+Environment=PYTHONPATH=/home/ubuntu/SoursUltimateDiscordTool
+ExecStart=/usr/bin/python3 bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
