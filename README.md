@@ -19,11 +19,12 @@ A Discord bot with timing commands and mod role management functionality.
 
 1. Install Python 3.11 or later
 2. Install required packages:
+ 
    ```bash
-  pip install discord.py
-  pip install flask-login
-  pip install flask-wtf
-  pip install twilio
+pip install discord.py
+pip install flask-login
+pip install flask-wtf
+pip install twilio
    ```
 3. Create a Discord bot:
    - Go to [Discord Developer Portal](https://discord.com/developers/applications)
