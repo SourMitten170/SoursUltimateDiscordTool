@@ -18,26 +18,23 @@ A Discord bot with timing commands and mod role management functionality.
 ## Setup
 
 1. Install Python 3.11 or later
-2. Install required packages: 
-   ```
-   pip install discord.py
-   pip install flask-login
-   pip install flask-wtf
-   pip install twilio
-   ```
-3. Create a Discord bot:
+2. Install required packages (Ubuntu 24.10):
+```
+sudo pip install --break-system-packages "discord.py>=2.5.0" "Flask>=3.1.0" "Flask-Login>=0.6.3" "Flask-WTF>=1.2.2" "twilio>=9.4.6"
+  ```
+4. Create a Discord bot:
    - Go to [Discord Developer Portal](https://discord.com/developers/applications)
    - Create a new application
    - Add a bot to your application
    - Copy the bot token
 
-4. Set up environment variables:
+5. Set up environment variables:
    - Create a `.env` file or set the environment variable:
      ```
      DISCORD_BOT_TOKEN=your_bot_token_here
      ```
 
-5. Configure the bot:
+6. Configure the bot:
    - Update `TARGET_GUILD_ID` in `bot.py` with your server ID
    - Ensure all required roles exist in your server:
      - "Super Duper Pooper Co-Owner" (for command access)
@@ -45,7 +42,7 @@ A Discord bot with timing commands and mod role management functionality.
      - "Restricted-Mod" (for restricted moderators)
      - "Guinea Pig" (for thank command)
 
-6. Run the bot:
+7. Run the bot:
    ```bash
    python bot.py
    ```
